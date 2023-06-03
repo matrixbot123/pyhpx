@@ -5,9 +5,7 @@ In my repository, I have primarily utilized two main libraries: pybind11 and HPX
 
 ```
 git clone https://github.com/STEllAR-GROUP/hpx.git
-
 cd hpx
-
 git checkout -b 1.9.0 v1.9.0
 ```
 above steps are just get the source code and to change the branch to 1.9.0.
