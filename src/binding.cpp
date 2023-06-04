@@ -15,7 +15,7 @@ void init_hpx_runtime(){
     char** argv = nullptr;
     hpx::start(nullptr, argc, argv);
 }
-
+// ============================================================================
 //set values to the shared_future
 void set_future_value(hpx::shared_future<int>& future, int value) {
     // Create a new promise
@@ -25,35 +25,27 @@ void set_future_value(hpx::shared_future<int>& future, int value) {
     future = std::move(new_future);
 }
 
+bool is_ready(const hpx::shared_future<int>& future){
+    return future.is_ready();
+}
 
+int get(const hpx::shared_future<int>& future){
+    return future.get();
+}
+
+//=============================================================================
 //async function that takes function from 
-hpx::shared_future<int> myAsyncFunction(py::args args)
+hpx::shared_future<int> async_function(py::function f, py::args args)
 {
-    if (args.size() == 0)
-    {
-        throw std::runtime_error("No function provided.");
-    }
 
-    py::function f = py::cast<py::function>(args[0]);
-    py::tuple arguments(args.size() - 1);
-    for (size_t i = 1; i < args.size(); ++i)
-    {
-        arguments[i - 1] = args[i];
-    }
-
-    return hpx::async([f, arguments]() {
+    return hpx::async([f, args]() {
         py::gil_scoped_acquire acquire;
-        py::object result = f(*arguments);
+        py::object result = f(*args);
         return result.cast<int>();
     });
 }
 
-
-
 PYBIND11_MODULE(pyhpx , m){ 
-
-
-
     m.def(  "init_hpx",
             &init_hpx_runtime);
                      
@@ -61,13 +53,13 @@ PYBIND11_MODULE(pyhpx , m){
         .def(py::init<>())
         .def(py::init<const hpx::shared_future<int>&>())
         .def("set_value", &set_future_value)
-        .def("get", [](const hpx::shared_future<int>& future) { return future.get(); },"Get the value of shared future");        
+        .def("is_ready",&is_ready,"Checks if the associated shared state is ready")
+        .def("get",&get,"Get the value of shared future")
     ;
 
-    m.def("new_async", [](py::args args) {
-            return myAsyncFunction(args);}
-        );
-
+    m.def("new_async", [](py::function f,py::args args) {
+        return async_function(f,args);
+    });
 
 }
 
