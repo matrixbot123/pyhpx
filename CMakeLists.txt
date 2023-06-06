@@ -4,7 +4,7 @@ project(pyhpx CXX)
 find_package(HPX)
 add_subdirectory(pybind11)
 
-add_executable(inter src/pyhpx.cpp)
+add_executable(inter src/inter.cpp)
 target_link_libraries(inter PUBLIC HPX::hpx HPX::wrap_main pybind11::embed)
 
 pybind11_add_module(pyhpx src/binding.cpp)
