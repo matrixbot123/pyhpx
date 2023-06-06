@@ -35,13 +35,12 @@ int get(const hpx::shared_future<int>& future){
 
 //=============================================================================
 //async function that takes function from 
-hpx::shared_future<int> async_function(py::function f, py::args args)
+hpx::shared_future<int> async_function(std::function<int(int)> f, int a)
 {
-
-    return hpx::async([f, args]() {
+    py::gil_scoped_acquire acquire;
+    return hpx::async([f, a]() {
         py::gil_scoped_acquire acquire;
-        py::object result = f(*args);
-        return result.cast<int>();
+        return f(a);
     });
 }
 
@@ -57,8 +56,8 @@ PYBIND11_MODULE(pyhpx , m){
         .def("get",&get,"Get the value of shared future")
     ;
 
-    m.def("new_async", [](py::function f,py::args args) {
-        return async_function(f,args);
+    m.def("new_async", [](std::function<int(int)> f,int a) {
+        return async_function(f,a);
     });
 
 }
